@@ -1,14 +1,18 @@
-
 ## Begin
 
+```
 swapoff -a
+```
 
-## Docker install 
+## Docker install
+
+```
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 sudo yum install docker-ce
 sudo systemctl start docker
+```
 
 ## cri-dockerd install
 
@@ -28,6 +32,7 @@ systemctl enable --now cri-docker.socket
 
 ### Install kubeadm, kubelet, kubectl
 
+```
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -45,19 +50,26 @@ sudo yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 
 sudo systemctl enable --now kubelet
 
+```
+
 ### Master node
 
+```
 kubeadm init --cri-socket=unix:///var/run/cri-dockerd.sock --pod-network-cidr=192.168.0.0/16
 //kubeadm reset --cri-socket=unix:///var/run/cri-dockerd.sock 
+```
 
+```
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
 
 You should now deploy a pod network to the cluster.
 Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
   https://kubernetes.io/docs/concepts/cluster-administration/addons/
 
+```
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
 watch kubectl get pods -n calico-system
@@ -65,11 +77,17 @@ kubectl taint nodes --all node-role.kubernetes.io/control-plane-
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
 kubectl get nodes -o wide
+```
 
 Then you can join any number of worker nodes by running the following on each as root:
 
+```
 kubeadm token create --print-join-command
+```
 
 ### Worker node
 
+```
 kubeadm join 9.30.116.11:6443 --token  --discovery-token-ca-cert-hash  --cri-socket=unix:///var/run/cri-dockerd.sock
+```
+
